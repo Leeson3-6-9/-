@@ -31,4 +31,20 @@ jobs:
       run: mvn package
 
     - name: Run tests
+      id: run-tests
+      continue-on-error: true
       run: mvn test
+
+    - name: Create issue on test failure
+      if: steps.run-tests.outcome == 'failure'
+      uses: actions-cool/issues-helper@v3
+      with:
+        actions: 'create-issue'
+        title: 'Test failure in build ${{ github.run_number }}'
+        body: |
+          The tests failed in build ${{ github.run_number }}.
+          - Commit: [${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})
+          - Workflow run: [Link](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          Please check the logs for more details.
+        labels: 'bug,test-failure'
+        assignees: 'your-github-username'    
